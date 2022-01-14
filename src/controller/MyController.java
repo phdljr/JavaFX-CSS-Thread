@@ -6,6 +6,8 @@ import java.util.Date;
 import java.util.ResourceBundle;
 
 import javafx.application.Platform;
+import javafx.concurrent.Service;
+import javafx.concurrent.Task;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
@@ -19,8 +21,8 @@ public class MyController implements Initializable {
 	private Button btn_start;
 	@FXML
 	private Button btn_stop;
-
-	private boolean isPlay = false;
+	
+	private TimeService timeService;
 
 	@Override
 	public void initialize(URL arg0, ResourceBundle arg1) {
@@ -29,25 +31,56 @@ public class MyController implements Initializable {
 	}
 	
 	public void startTimer(ActionEvent e) {
-		isPlay = true;
-		Thread th = new Thread(()->{
-			SimpleDateFormat sdf = new SimpleDateFormat("HH:mm:ss");
-			while(isPlay) {
-				Platform.runLater(()->lbtimer.setText(sdf.format(new Date()).toString()));
-				try {
-					Thread.sleep(100);
-				} catch (InterruptedException e1) {
-					// TODO Auto-generated catch block
-					e1.printStackTrace();
-				}
-			}
-		});
-		th.setDaemon(true);
-		th.start();
+//		isPlay = true;
+//		Thread th = new Thread(()->{
+//			SimpleDateFormat sdf = new SimpleDateFormat("HH:mm:ss");
+//			while(isPlay) {
+//				Platform.runLater(()->lbtimer.setText(sdf.format(new Date()).toString()));
+//				try {
+//					Thread.sleep(100);
+//				} catch (InterruptedException e1) {
+//					e1.printStackTrace();
+//				}
+//			}
+//		});
+//		//th.setDaemon(true);
+//		th.start();
+		
+		
 	}
 	
 	public void stopTimer(ActionEvent e) {
-		isPlay = false;
+		
 	}
-
+	
+	class TimeService extends Service<Integer>{
+		@Override
+		protected Task<Integer> createTask() {
+			Task<Integer> task = new Task<>() {
+				@Override
+				protected Integer call() throws Exception {
+					int result = 0;
+					for(int i=0;i<100;i++) {
+						if(isCancelled()) {
+							break;
+						}
+						result+=i;
+						updateProgress(i, 100);
+						updateMessage(String.valueOf(i));
+						try {
+							Thread.sleep(100);
+						}
+						catch(InterruptedException e) {
+							if(isCancelled()) {
+								break;
+							}
+						}
+					}
+					return result;
+				}
+			};
+			return task;
+		}
+		
+	}
 }
